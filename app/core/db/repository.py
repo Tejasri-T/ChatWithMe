@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.db.session import get_sqlite_connection
 
@@ -35,7 +35,7 @@ class ThreadRepository:
 
     def upsert_thread(self, thread_id: str, chat_name: str) -> None:
         """Insert or update a thread title."""
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         cursor = self._conn.cursor()
         cursor.execute("""
             INSERT INTO chat_threads (thread_id, chat_name, created_at, updated_at)
