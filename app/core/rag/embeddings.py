@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
-from typing import Optional
+
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core.config import get_settings
 
 
-@lru_cache()
-def get_embeddings(api_key: Optional[str] = None) -> GoogleGenerativeAIEmbeddings:
+@lru_cache
+def get_embeddings(api_key: str | None = None) -> GoogleGenerativeAIEmbeddings:
     """
     Return a cached embedding model instance configured from settings.
     Raises ValueError if no API key is configured.
@@ -24,7 +24,7 @@ def get_embeddings(api_key: Optional[str] = None) -> GoogleGenerativeAIEmbedding
             "GOOGLE_API_KEY is not configured. Please set GOOGLE_API_KEY in your .env file or environment."
         )
 
-    return GoogleGenerativeAIEmbeddings(
+    return GoogleGenerativeAIEmbeddings(  # type: ignore[call-arg]
         model=settings.EMBEDDING_MODEL,
         google_api_key=key,
     )

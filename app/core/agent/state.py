@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, List, TypedDict
+from typing import Annotated, Any, TypedDict
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
@@ -10,12 +11,12 @@ from pydantic import BaseModel, Field
 
 class ChatState(TypedDict):
     """Primary conversational state tracking message sequence."""
-    messages: Annotated[List[BaseMessage], add_messages]
+    messages: Annotated[list[BaseMessage], add_messages]
 
 
 class NameState(TypedDict):
     """State for auto-generating conversation titles."""
-    messages: List[Any]
+    messages: list[Any]
     name: str
 
 

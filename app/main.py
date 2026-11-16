@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import time
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.api.v1.schemas import HealthResponse
@@ -20,7 +20,6 @@ async def lifespan(app: FastAPI):
     """Lifecycle event handler: runs pre-flight database migrations on startup."""
     # Ensure database tables and checkpointer tables exist
     repo = ThreadRepository()
-    repo.init_db()
     get_checkpointer()
     yield
 

@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from app.api.v1.schemas import DocumentSummaryResponse
+from app.core.config import get_settings
 from app.core.rag import get_rag_service
+from app.core.security import rate_limit_dependency, validate_pdf_content, verify_api_key
 
-router = APIRouter(prefix="/documents", tags=["Documents"])
+router = APIRouter(
+    prefix="/documents",
+    tags=["Documents"],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
+)
 
 
 @router.post("/upload", response_model=DocumentSummaryResponse)
@@ -17,8 +23,11 @@ async def upload_document(
 ):
     """
     Upload and index a PDF document into the thread-scoped vector store.
+    Enforces format checking, magic byte inspection, and size limits.
     """
-    if not file.filename.lower().endswith(".pdf"):
+    settings = get_settings()
+    filename = file.filename or "uploaded.pdf"
+    if not filename.lower().endswith(".pdf"):
         raise HTTPException(
             status_code=400,
             detail="Unsupported file format. Only PDF files (.pdf) are currently supported.",
@@ -28,12 +37,25 @@ async def upload_document(
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
+    max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File exceeds maximum allowed size of {settings.MAX_UPLOAD_SIZE_MB}MB.",
+        )
+
+    if not validate_pdf_content(content):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file signature: Content is not a legitimate PDF document.",
+        )
+
     rag = get_rag_service()
     try:
         summary = rag.ingest_pdf(
             thread_id=thread_id,
             file_bytes=content,
-            filename=file.filename,
+            filename=filename,
         )
         return DocumentSummaryResponse(
             filename=summary["filename"],

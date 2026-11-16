@@ -4,16 +4,24 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import AsyncGenerator
-from fastapi import APIRouter, HTTPException
+from collections.abc import AsyncGenerator
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from app.api.v1.schemas import ChatMessageRequest, ChatMessageResponse
 from app.core.agent import get_chatbot, get_namebot
+from app.core.config import get_settings
 from app.core.db.repository import ThreadRepository
+from app.core.security import rate_limit_dependency, verify_api_key
 
-router = APIRouter(prefix="/chat", tags=["Chat"])
+router = APIRouter(
+    prefix="/chat",
+    tags=["Chat"],
+    dependencies=[Depends(verify_api_key), Depends(rate_limit_dependency)],
+)
 
 
 def _extract_text(content: Any) -> str:
@@ -23,7 +31,7 @@ def _extract_text(content: Any) -> str:
     elif isinstance(content, list) and len(content) > 0:
         first = content[0]
         if isinstance(first, dict):
-            return first.get("text", "")
+            return str(first.get("text", ""))
         return str(first)
     return ""
 
@@ -33,6 +41,13 @@ async def send_chat_message(request: ChatMessageRequest):
     """
     Submit a message to the agent and receive the complete response synchronously.
     """
+    settings = get_settings()
+    if len(request.message) > settings.MAX_PROMPT_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Prompt exceeds maximum permitted length of {settings.MAX_PROMPT_LENGTH} characters.",
+        )
+
     thread_id = request.thread_id or str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
     repo = ThreadRepository()
@@ -71,6 +86,13 @@ async def stream_chat_message(request: ChatMessageRequest):
     """
     Submit a message and stream tokens and tool status back as Server-Sent Events (SSE).
     """
+    settings = get_settings()
+    if len(request.message) > settings.MAX_PROMPT_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Prompt exceeds maximum permitted length of {settings.MAX_PROMPT_LENGTH} characters.",
+        )
+
     thread_id = request.thread_id or str(uuid.uuid4())
     config = {"configurable": {"thread_id": thread_id}}
     repo = ThreadRepository()

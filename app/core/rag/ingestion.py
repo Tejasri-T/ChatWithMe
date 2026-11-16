@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import tempfile
-from typing import List, Tuple
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -22,7 +22,7 @@ class DocumentIngestionService:
             separators=["\n\n", "\n", " ", ""],
         )
 
-    def parse_pdf(self, file_bytes: bytes, filename: str) -> Tuple[List[Document], dict]:
+    def parse_pdf(self, file_bytes: bytes, filename: str) -> tuple[list[Document], dict]:
         """
         Parse raw PDF bytes into chunked documents with enriched metadata.
 

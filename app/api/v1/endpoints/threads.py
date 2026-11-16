@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List
 from fastapi import APIRouter, HTTPException
 from langchain_core.messages import HumanMessage
 
@@ -27,7 +26,7 @@ def _serialize_message(msg) -> MessageItem:
     return MessageItem(role=role, content=content)
 
 
-@router.get("", response_model=List[ThreadSummary])
+@router.get("", response_model=list[ThreadSummary])
 async def list_threads():
     """List all recorded conversation threads."""
     repo = ThreadRepository()

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
+
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 
@@ -12,7 +13,7 @@ from app.core.agent.tools import get_agent_tools
 from app.core.db.repository import ThreadRepository
 
 
-def chat_node(state: ChatState, config: RunnableConfig) -> Dict[str, Any]:
+def chat_node(state: ChatState, config: RunnableConfig) -> dict[str, Any]:
     """
     Primary chat node: constructs system instructions with thread context,
     binds available tools, and executes the LLM turn.
@@ -38,7 +39,7 @@ def chat_node(state: ChatState, config: RunnableConfig) -> Dict[str, Any]:
     return {"messages": [response]}
 
 
-def name_node(state: NameState, config: RunnableConfig) -> Dict[str, str]:
+def name_node(state: NameState, config: RunnableConfig) -> dict[str, str]:
     """
     Automated titling node: analyzes initial conversation turns and generates
     a concise, non-colliding thread title.
@@ -54,8 +55,8 @@ def name_node(state: NameState, config: RunnableConfig) -> Dict[str, str]:
         f"Do not reuse any of these existing titles: {past_names}."
     )
 
-    response: NameSchema = structured_llm.invoke(prompt)
-    chat_name = response.name
+    response = structured_llm.invoke(prompt)
+    chat_name = response.name if isinstance(response, NameSchema) else str(getattr(response, "name", "New Chat"))
 
     thread_id = "default"
     if config and isinstance(config, dict):

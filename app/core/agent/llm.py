@@ -4,17 +4,17 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
-from typing import Optional
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import get_settings
 
 
-@lru_cache()
+@lru_cache
 def get_llm(
-    model: Optional[str] = None,
+    model: str | None = None,
     temperature: float = 0.7,
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
 ) -> ChatGoogleGenerativeAI:
     """
     Return a configured ChatGoogleGenerativeAI instance.

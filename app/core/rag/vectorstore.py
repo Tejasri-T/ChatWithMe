@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, cast
+
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -13,13 +14,13 @@ class VectorStoreRegistry:
 
     def __init__(self, embeddings: Embeddings):
         self.embeddings = embeddings
-        self._stores: Dict[str, Any] = {}
-        self._metadata: Dict[str, dict] = {}
+        self._stores: dict[str, Any] = {}
+        self._metadata: dict[str, dict] = {}
 
     def index_documents(
         self,
         thread_id: str,
-        documents: List[Document],
+        documents: list[Document],
         summary_metadata: dict,
     ) -> dict:
         """Create or update a FAISS vector index for the designated thread."""
@@ -29,7 +30,7 @@ class VectorStoreRegistry:
         self._metadata[thread_key] = summary_metadata
         return summary_metadata
 
-    def get_retriever(self, thread_id: Optional[str], top_k: int = 4):
+    def get_retriever(self, thread_id: str | None, top_k: int = 4):
         """Retrieve a LangChain retriever for the thread if one exists."""
         if not thread_id:
             return None
@@ -39,12 +40,13 @@ class VectorStoreRegistry:
             return None
         return store.as_retriever(search_type="similarity", search_kwargs={"k": top_k})
 
-    def search(self, thread_id: str, query: str, top_k: int = 4) -> List[Document]:
+    def search(self, thread_id: str, query: str, top_k: int = 4) -> list[Document]:
         """Perform similarity search on documents in a thread."""
         retriever = self.get_retriever(thread_id, top_k=top_k)
         if retriever is None:
             return []
-        return retriever.invoke(query)
+        results = retriever.invoke(query)
+        return cast(list[Document], results)
 
     def get_metadata(self, thread_id: str) -> dict:
         """Return document metadata for a thread."""

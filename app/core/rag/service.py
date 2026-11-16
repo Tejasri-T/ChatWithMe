@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from langchain_core.embeddings import Embeddings
 
 from app.core.rag.embeddings import get_embeddings
@@ -13,10 +14,10 @@ from app.core.rag.vectorstore import VectorStoreRegistry
 class RAGService:
     """Unified service for document ingestion, indexing, and context retrieval."""
 
-    def __init__(self, embeddings: Optional[Embeddings] = None):
+    def __init__(self, embeddings: Embeddings | None = None):
         self._embeddings = embeddings
         self.ingestion = DocumentIngestionService()
-        self._registry: Optional[VectorStoreRegistry] = (
+        self._registry: VectorStoreRegistry | None = (
             VectorStoreRegistry(self._embeddings) if self._embeddings else None
         )
 
@@ -36,10 +37,10 @@ class RAGService:
 
     def retrieve_context(
         self,
-        thread_id: Optional[str],
+        thread_id: str | None,
         query: str,
         top_k: int = 4,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Query context from indexed documents for a thread.
         Returns a formatted dictionary ready for tool responses.
@@ -89,7 +90,7 @@ class RAGService:
         return self._registry.delete_thread_index(thread_id)
 
 
-_rag_service: Optional[RAGService] = None
+_rag_service: RAGService | None = None
 
 
 def get_rag_service() -> RAGService:

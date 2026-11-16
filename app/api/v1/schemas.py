@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class ChatMessageRequest(BaseModel):
     """Payload for submitting a user message to the chatbot."""
     message: str = Field(..., min_length=1, description="User prompt text")
-    thread_id: Optional[str] = Field(None, description="Unique conversation thread identifier")
+    thread_id: str | None = Field(None, description="Unique conversation thread identifier")
 
 
 class ChatMessageResponse(BaseModel):
@@ -17,7 +18,7 @@ class ChatMessageResponse(BaseModel):
     role: str = "assistant"
     content: str
     thread_id: str
-    thread_title: Optional[str] = None
+    thread_title: str | None = None
 
 
 class MessageItem(BaseModel):
@@ -35,9 +36,9 @@ class ThreadSummary(BaseModel):
 class ThreadDetailResponse(BaseModel):
     """Detailed view of a thread including message history and indexed document info."""
     thread_id: str
-    chat_name: Optional[str] = None
-    messages: List[MessageItem]
-    document_metadata: Optional[Dict[str, Any]] = None
+    chat_name: str | None = None
+    messages: list[MessageItem]
+    document_metadata: dict[str, Any] | None = None
 
 
 class DocumentSummaryResponse(BaseModel):
