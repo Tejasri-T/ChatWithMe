@@ -4,6 +4,7 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+
 class Settings(BaseSettings):
     """Central application settings managed via pydantic-settings."""
 
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
     # Accepts either GOOGLE_API_KEY or GEMINI_API_KEY from the environment
     GOOGLE_API_KEY: str = ""
     GEMINI_API_KEY: str = ""          # alias used in .env
-    LLM_MODEL: str = "gemini-3.8-flash"
+    LLM_MODEL: str = "gemini-3.5-flash"
     EMBEDDING_MODEL: str = "gemini-embedding-2-preview"
     MAX_TOKENS: int = 4096
 
